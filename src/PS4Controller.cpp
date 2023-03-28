@@ -1,15 +1,25 @@
 #include "PS4Controller.h"
 
-#include <esp_bt_defs.h>
-#include <esp_bt_main.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
+
+#include "esp_bt_defs.h"
+#include "esp_bt_main.h"
+#include "esp_log.h"
+
 
 extern "C" {
 #include "ps4.h"
 }
 
-#define ESP_BD_ADDR_HEX_PTR(addr) \
-  (uint8_t*)addr + 0, (uint8_t*)addr + 1, (uint8_t*)addr + 2, \
-  (uint8_t*)addr + 3, (uint8_t*)addr + 4, (uint8_t*)addr + 5
+#define TAG    __FUNCTION__
+
+//#define ESP_BD_ADDR_HEX_PTR(addr) (uint8_t*)addr + 0, (uint8_t*)addr + 1, (uint8_t*)addr + 2, (uint8_t*)addr + 3, (uint8_t*)addr + 4, (uint8_t*)addr + 5
+
+#define ESP_BD_ADDR_HEX_STR "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx"
+#define ESP_BD_ADDR_HEX_ARR(addr)   addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]
+#define ESP_BD_ADDR_HEX_PTR(addr)  &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]
 
 PS4Controller::PS4Controller() {}
 
@@ -17,22 +27,22 @@ bool PS4Controller::begin() {
   ps4SetEventObjectCallback(this, &PS4Controller::_event_callback);
   ps4SetConnectionObjectCallback(this, &PS4Controller::_connection_callback);
 
-  if (!btStarted() && !btStart()) {
-    log_e("btStart failed");
-    return false;
-  }
+//  if (!btStarted() && !btStart()) {
+//    log_e("btStart failed");
+//    return false;
+//  }
 
   esp_bluedroid_status_t btState = esp_bluedroid_get_status();
   if (btState == ESP_BLUEDROID_STATUS_UNINITIALIZED) {
     if (esp_bluedroid_init()) {
-      log_e("esp_bluedroid_init failed");
+      ESP_LOGE(TAG, "esp_bluedroid_init failed");
       return false;
     }
   }
 
   if (btState != ESP_BLUEDROID_STATUS_ENABLED) {
     if (esp_bluedroid_enable()) {
-      log_e("esp_bluedroid_enable failed");
+      ESP_LOGE(TAG, "esp_bluedroid_enable failed");
       return false;
     }
   }
@@ -43,9 +53,9 @@ bool PS4Controller::begin() {
 
 bool PS4Controller::begin(const char* mac) {
   esp_bd_addr_t addr;
-    
-  if (sscanf(mac, ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX_PTR(addr)) != ESP_BD_ADDR_LEN) {
-    log_e("Could not convert %s\n to a MAC address", mac);
+
+  if (sscanf(mac, ESP_BD_ADDR_HEX_STR, ESP_BD_ADDR_HEX_PTR(addr)) != ESP_BD_ADDR_LEN) {
+    ESP_LOGE(TAG, "Could not convert %s\n to a MAC address", mac);
     return false;
   }
 
@@ -87,7 +97,7 @@ void PS4Controller::attachOnDisconnect(callback_t callback) {
 }
 
 void PS4Controller::_event_callback(
-  void* object, ps4_t data, ps4_event_t event) {
+    void* object, ps4_t data, ps4_event_t event) {
   PS4Controller* This = (PS4Controller*)object;
 
   memcpy(&This->data, &data, sizeof(ps4_t));
@@ -102,8 +112,8 @@ void PS4Controller::_connection_callback(void* object, uint8_t isConnected) {
   PS4Controller* This = (PS4Controller*)object;
 
   if (isConnected) {
-    delay(250);  // ToDo: figure out how to know when the channel is free again
-                 // so this delay can be removed
+    vTaskDelay(250);  // ToDo: figure out how to know when the channel is free again
+                     // so this delay can be removed
 
     if (This->_callback_connect) {
       This->_callback_connect();

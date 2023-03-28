@@ -1,7 +1,7 @@
 #ifndef GAP_API_H
 #define GAP_API_H
 
-#include "stack/l2c_api.h"
+#include "l2c_api.h"
 
 /*****************************************************************************
 **  Constants

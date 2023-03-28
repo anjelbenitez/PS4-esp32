@@ -1,7 +1,7 @@
 #ifndef HCIDEFS_H
 #define HCIDEFS_H
 
-#include "stack/bt_types.h"
+#include "bt_types.h"
 
 /* Define the extended flow specification fields used by AMP */
 typedef struct {

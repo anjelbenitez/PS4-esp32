@@ -26,7 +26,7 @@
 #define BTM_API_H
 
 
-#include "stack/bt_types.h"
+#include "bt_types.h"
 
 /* Security service definitions (BTM_SetSecurityLevel)
 ** Used for Authorization APIs

@@ -26,9 +26,9 @@
 
 #include <stdbool.h>
 
-#include "stack/l2cdefs.h"
-#include "stack/hcidefs.h"
-#include "stack/btm_api.h"
+#include "l2cdefs.h"
+#include "hcidefs.h"
+#include "btm_api.h"
 
 /*****************************************************************************
 **  Constants
