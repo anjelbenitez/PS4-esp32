@@ -5,6 +5,8 @@ set(IDF_COMPONENT_MANAGER 0)
 
 set(EXTRA_COMPONENT_DIRS "/tools/esp-idf/components")
 
+set(COMPONENT_ADD_INCLUDEDIRS "include")
+
 set(COMPONENT_REQUIRES
         "bt"
         "esp32"
